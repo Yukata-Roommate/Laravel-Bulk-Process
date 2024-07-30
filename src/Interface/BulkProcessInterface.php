@@ -9,7 +9,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection as SupportCollection;
 
 /**
- * BulkProcessのInterface
+ * BulkProcess Interface
  * 
  * @package YukataRm\Laravel\BulkProcess\Interface
  */
@@ -20,60 +20,60 @@ interface BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * 一括処理に使用するデータ
+     * get data
      *
      * @return \Illuminate\Support\Collection
      */
     public function data(): SupportCollection;
 
     /**
-     * 一括処理に使用するデータの配列
+     * get data as array
      * 
      * @return array
      */
     public function dataArray(): array;
 
     /**
-     * 一括処理に使用するデータの件数
+     * get data count
      * 
      * @return int
      */
     public function dataCount(): int;
 
     /**
-     * バリデーションに失敗したデータ
+     * get invalid data
      *
      * @return \Illuminate\Support\Collection
      */
-    public function failureData(): SupportCollection;
+    public function invalidData(): SupportCollection;
 
     /**
-     * バリデーションに失敗したデータの配列
+     * get invalid data as array
      * 
      * @return array
      */
-    public function failureDataArray(): array;
+    public function invalidDataArray(): array;
 
     /**
-     * バリデーションに失敗したデータの件数
+     * get invalid data count
      * 
      * @return int
      */
-    public function failureDataCount(): int;
+    public function invalidDataCount(): int;
 
     /*----------------------------------------*
      * Property
      *----------------------------------------*/
 
     /**
-     * 一括処理を行う件数の閾値
+     * get limit
      *
      * @return int
      */
     public function limit(): int;
 
     /**
-     * 一括処理を行う件数の閾値を設定する
+     * set limit
      * 
      * @param int $limit
      * @return static
@@ -81,14 +81,14 @@ interface BulkProcessInterface
     public function setLimit(int $limit): static;
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのClass名
+     * get class name of Model
      *
      * @return string
      */
     public function modelClass(): string;
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのClass名を設定する
+     * set class name of Model
      * 
      * @param string $modelClass
      * @return static
@@ -96,14 +96,14 @@ interface BulkProcessInterface
     public function setModelClass(string $modelClass): static;
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのインスタンスを生成する
+     * get Model instance
      *
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function model(): Model;
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのクラス名をインスタンスから設定する
+     * set class name of Model from instance
      * 
      * @param \Illuminate\Database\Eloquent\Model $model
      * @return static
@@ -115,21 +115,21 @@ interface BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * 一括処理を行うテーブルに紐づいたQueryBuilderを取得する
+     * get Builder
      * 
      * @return \Illuminate\Database\Query\Builder
      */
     public function queryBuilder(): Builder;
 
     /**
-     * 一括処理を行うテーブルをTruncateする
+     * truncate table
      * 
      * @return static
      */
     public function truncateTable(): static;
 
     /**
-     * dataの一括処理を行う
+     * execute bulk process
      * 
      * @param \Closure $callback
      * @return static
@@ -137,7 +137,7 @@ interface BulkProcessInterface
     public function bulkProcess(\Closure $callback): static;
 
     /**
-     * dataを一括挿入する
+     * execute bulk insert
      * 
      * @param bool $isTruncate
      * @return static
@@ -145,7 +145,7 @@ interface BulkProcessInterface
     public function bulkInsert(bool $isTruncate = false): static;
 
     /**
-     * uniqueByのカラムを基に、存在する場合は更新、存在しない場合は挿入する
+     * execute bulk upsert
      * 
      * @param array|string $uniqueBy
      * @return static
@@ -157,7 +157,7 @@ interface BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * dataを一括挿入する
+     * execute bulk insert
      * 
      * @param array|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Support\Arrayable $data
      * @param bool $isTruncate
@@ -166,7 +166,7 @@ interface BulkProcessInterface
     public static function insert(array|SupportCollection|EloquentCollection|Arrayable $data, bool $isTruncate = false): void;
 
     /**
-     * uniqueByのカラムを基に、存在する場合は更新、存在しない場合は挿入する
+     * execute bulk upsert
      * 
      * @param array|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Support\Arrayable $data
      * @param array|string $uniqueBy

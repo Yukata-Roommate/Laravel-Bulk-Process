@@ -12,7 +12,7 @@ use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * 一括処理機能を持つ基底クラス
+ * Base Bulk Process
  * 
  * @package YukataRm\Laravel\BulkProcess
  */
@@ -23,28 +23,26 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * 一括処理に使用するデータ
+     * data for bulk process
      *
      * @var \Illuminate\Support\Collection
      */
     protected SupportCollection $data;
 
     /**
-     * バリデーションに失敗したデータ
+     * invalid data
      * 
      * @var \Illuminate\Support\Collection
      */
-    protected SupportCollection $failureData;
+    protected SupportCollection $invalidData;
 
     /**
-     * BulkProcessのコンストラクタ
+     * constructor
      *
      * @param array|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Support\Arrayable $data
-     * @throws \InvalidArgumentException
      */
     function __construct(array|SupportCollection|EloquentCollection|Arrayable $data)
     {
-        // dataをCollectionに統一する
         $collection = match (true) {
             is_array($data)                     => collect($data),
             $data instanceof EloquentCollection => $data->toBase(),
@@ -54,34 +52,27 @@ abstract class BaseBulkProcess implements BulkProcessInterface
             default => null,
         };
 
-        // collectionがCollectionでない場合は例外をthrowする
-        if (!$collection instanceof SupportCollection) throw new \InvalidArgumentException("Invalid data type: " . gettype($data));
+        if (!$collection instanceof SupportCollection) throw new \InvalidArgumentException("invalid data type: " . gettype($data));
 
-        // dataが空の場合は例外をthrowする
-        if ($collection->isEmpty()) throw new \InvalidArgumentException("data must not be empty");
+        if ($collection->isEmpty()) throw new \InvalidArgumentException("data required");
 
-        // dataのバリデーションを行い、失敗したデータをfailureDataに格納する
-        $this->failureData = $collection->reject(function ($item) {
+        $this->invalidData = $collection->reject(function ($item) {
             return !$this->validate($item);
         });
 
-        // collectionからfailureDataを除外する
-        $collection = $collection->diff($this->failureData);
+        $collection = $collection->diff($this->invalidData);
 
-        // collectionが空の場合は例外をthrowする
-        if ($collection->isEmpty()) throw new \InvalidArgumentException("data must not be empty");
+        if ($collection->isEmpty()) throw new \InvalidArgumentException("all data is invalid");
 
-        // dataの成型処理を行う
         $formatted = $collection->map(function ($item) {
             return $this->format($item);
         });
 
-        // formattedをdataに格納する
         $this->data = $formatted;
     }
 
     /**
-     * dataのバリデーションを行う
+     * validate data
      * 
      * @param mixed $item
      * @return bool
@@ -89,7 +80,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     abstract protected function validate(mixed $item): bool;
 
     /**
-     * dataの成型処理を行う
+     * format data
      * 
      * @param mixed $item
      * @return array
@@ -97,7 +88,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     abstract protected function format(mixed $item): array;
 
     /**
-     * 一括処理に使用するデータ
+     * get data
      *
      * @return \Illuminate\Support\Collection
      */
@@ -107,7 +98,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理に使用するデータの配列
+     * get data as array
      * 
      * @return array
      */
@@ -117,7 +108,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理に使用するデータの件数
+     * get data count
      * 
      * @return int
      */
@@ -127,33 +118,33 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * バリデーションに失敗したデータ
+     * get invalid data
      *
      * @return \Illuminate\Support\Collection
      */
-    public function failureData(): SupportCollection
+    public function invalidData(): SupportCollection
     {
-        return $this->failureData;
+        return $this->invalidData;
     }
 
     /**
-     * バリデーションに失敗したデータの配列
+     * get invalid data as array
      * 
      * @return array
      */
-    public function failureDataArray(): array
+    public function invalidDataArray(): array
     {
-        return $this->failureData->toArray();
+        return $this->invalidData->toArray();
     }
 
     /**
-     * バリデーションに失敗したデータの件数
+     * get invalid data count
      * 
      * @return int
      */
-    public function failureDataCount(): int
+    public function invalidDataCount(): int
     {
-        return $this->failureData->count();
+        return $this->invalidData->count();
     }
 
     /*----------------------------------------*
@@ -161,21 +152,21 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * 一括処理を行う件数の閾値
+     * limit of bulk process
      * 
      * @var int
      */
     protected int $limit = 1000;
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのClass名
+     * class name of Model
      * 
      * @var string
      */
     protected string $modelClass;
 
     /**
-     * 一括処理を行う件数の閾値
+     * get limit
      *
      * @return int
      */
@@ -185,7 +176,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理を行う件数の閾値を設定する
+     * set limit
      * 
      * @param int $limit
      * @return static
@@ -198,7 +189,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのClass名
+     * get class name of Model
      *
      * @return string
      */
@@ -208,7 +199,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのClass名を設定する
+     * set class name of Model
      * 
      * @param string $modelClass
      * @return static
@@ -221,7 +212,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのインスタンスを生成する
+     * get Model instance
      *
      * @return \Illuminate\Database\Eloquent\Model
      */
@@ -231,7 +222,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理を行うテーブルに紐づいたModelのクラス名をインスタンスから設定する
+     * set class name of Model from instance
      * 
      * @param \Illuminate\Database\Eloquent\Model $model
      * @return static
@@ -248,7 +239,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * 一括処理を行うテーブルに紐づいたQueryBuilderを取得する
+     * get Builder
      * 
      * @return \Illuminate\Database\Query\Builder
      */
@@ -258,7 +249,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * 一括処理を行うテーブルをTruncateする
+     * truncate table
      * 
      * @return static
      */
@@ -270,14 +261,13 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * dataの一括処理を行う
+     * execute bulk process
      * 
      * @param \Closure $callback
      * @return static
      */
     public function bulkProcess(\Closure $callback): static
     {
-        // dataを一括処理する
         $this->data()->chunk($this->limit())->each(function (SupportCollection $chunk) use ($callback) {
             $callback($chunk);
         });
@@ -286,17 +276,15 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * dataを一括挿入する
+     * execute bulk insert
      * 
      * @param bool $isTruncate
      * @return static
      */
     public function bulkInsert(bool $isTruncate = false): static
     {
-        // テーブルをTruncateする
         if ($isTruncate) $this->truncateTable();
 
-        // dataを一括挿入する
         $this->bulkProcess(function (SupportCollection $chunk) {
             $this->queryBuilder()->insert($chunk->toArray());
         });
@@ -305,14 +293,13 @@ abstract class BaseBulkProcess implements BulkProcessInterface
     }
 
     /**
-     * uniqueByのカラムを基に、存在する場合は更新、存在しない場合は挿入する
+     * execute bulk upsert
      * 
      * @param array|string $uniqueBy
      * @return static
      */
     public function bulkUpsert(array|string $uniqueBy): static
     {
-        // dataをUpsertする
         $this->bulkProcess(function (SupportCollection $chunk) use ($uniqueBy) {
             $this->queryBuilder()->upsert($chunk->toArray(), $uniqueBy);
         });
@@ -325,7 +312,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      *----------------------------------------*/
 
     /**
-     * dataを一括挿入する
+     * execute bulk insert
      * 
      * @param array|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Support\Arrayable $data
      * @param bool $isTruncate
@@ -333,15 +320,13 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      */
     public static function insert(array|SupportCollection|EloquentCollection|Arrayable $data, bool $isTruncate = false): void
     {
-        // BulkProcessのインスタンスを生成する
         $instance = new static($data);
 
-        // dataを一括挿入する
         $instance->bulkInsert($isTruncate);
     }
 
     /**
-     * uniqueByのカラムを基に、存在する場合は更新、存在しない場合は挿入する
+     * execute bulk upsert
      * 
      * @param array|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Support\Arrayable $data
      * @param array|string $uniqueBy
@@ -349,10 +334,8 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      */
     public static function upsert(array|SupportCollection|EloquentCollection|Arrayable $data, array|string $uniqueBy): void
     {
-        // BulkProcessのインスタンスを生成する
         $instance = new static($data);
 
-        // dataを一括挿入する
         $instance->bulkUpsert($uniqueBy);
     }
 }

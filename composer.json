@@ -3,7 +3,7 @@
     "description": "Easy to use bulk process for Laravel",
     "type": "library",
     "license": "MIT",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "autoload": {
         "psr-4": {
             "YukataRm\\Laravel\\BulkProcess\\": "src"
