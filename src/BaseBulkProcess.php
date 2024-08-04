@@ -41,7 +41,7 @@ abstract class BaseBulkProcess implements BulkProcessInterface
      *
      * @param array|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Support\Arrayable $data
      */
-    function __construct(array|SupportCollection|EloquentCollection|Arrayable $data)
+    public function __construct(array|SupportCollection|EloquentCollection|Arrayable $data)
     {
         $collection = match (true) {
             is_array($data)                     => collect($data),
